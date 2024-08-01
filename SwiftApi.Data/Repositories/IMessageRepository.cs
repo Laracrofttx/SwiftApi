@@ -4,6 +4,6 @@ namespace SwiftApi.Data.Repositories
 {
 	public interface IMessageRepository
 	{
-		Task<ResponseMessage<string>> InsertSwiftMessage(Message message);
+		Task<ResponseMessage<string>> InsertSwiftMessageAsync(Message message);
 	}
 }
