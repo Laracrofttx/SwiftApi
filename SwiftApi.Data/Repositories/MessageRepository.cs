@@ -6,7 +6,7 @@ namespace SwiftApi.Data.Repositories
 {
 	public class MessageRepository : IMessageRepository
 	{
-		public Task<ResponseMessage> InsertSwiftMessage(Message message)
+		public Task<ResponseMessage<string>> InsertSwiftMessage(Message message)
 		{
 			throw new NotImplementedException();
 		}
