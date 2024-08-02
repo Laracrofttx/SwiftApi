@@ -8,10 +8,11 @@ namespace SwiftApi.Data.Repositories
 	{
 		private readonly SwiftApiDbContext swiftApiDbContext;
 
-        public MessageRepository(SwiftApiDbContext swiftApiDbContext)
+		public MessageRepository(SwiftApiDbContext swiftApiDbContext)
         {
 		   this.swiftApiDbContext = swiftApiDbContext;
         }
+	
         public async Task<ResponseMessage<string>> InsertSwiftMessageAsync(Message message)
 		{
 			var response = new ResponseMessage<string>();
@@ -28,5 +29,6 @@ namespace SwiftApi.Data.Repositories
 			}
 			return response;
 		}
+
 	}
 }

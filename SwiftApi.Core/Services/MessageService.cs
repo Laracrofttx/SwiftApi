@@ -85,7 +85,7 @@ namespace SwiftApi.Core.Services
 		private void Block5Split(string result)
 		{
 			string key = "TrailersBlock";
-			string input = $"{result}}}";
+			string input = $"{result}";
 			int counter = 1;
 			string pattern = @"\{(.*?)\}";
 			MatchCollection matches = Regex.Matches(input, pattern);

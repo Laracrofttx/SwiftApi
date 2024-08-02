@@ -1,4 +1,5 @@
-﻿using SwiftApi.Data.Models;
+﻿using Microsoft.Data.Sqlite;
+using SwiftApi.Data.Models;
 
 namespace SwiftApi.Data.Repositories
 {
