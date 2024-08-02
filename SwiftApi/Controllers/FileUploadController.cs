@@ -2,6 +2,7 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.VisualBasic;
 using SwiftApi.Core.Services;
+using SwiftApi.Core.Services.Interfaces;
 using SwiftApi.Data.GlobalConstants;
 using SwiftApi.Data.Models;
 using System.Transactions;
@@ -12,10 +13,10 @@ namespace SwiftApi.Controllers
 	[ApiController]
 	public class FileUploadController : Controller
 	{
-		private readonly MessageService messageService;
+		private readonly IMessageService messageService;
 		private readonly ILogger<FileUploadController> logger;
 
-		public FileUploadController(MessageService messageService, ILogger<FileUploadController> logger)
+		public FileUploadController(IMessageService messageService, ILogger<FileUploadController> logger)
 		{
 			this.messageService = messageService;
 			this.logger = logger;
@@ -28,69 +29,21 @@ namespace SwiftApi.Controllers
 		[HttpPost("upload")]
 		public async Task<IActionResult> UploadFile(IFormFile file)
 		{
-			logger.LogInformation(GlobalConstants.ImportProcessStarted);
-			using var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-
-			try
+			using (var reader = new StreamReader(file.OpenReadStream()))
 			{
-				using var reader = new StreamReader(file.OpenReadStream());
-				var content = await reader.ReadToEndAsync();
-
-				logger.LogInformation(GlobalConstants.ParseProcessStarted);
-				var swiftDataResponse = await this.messageService.PargeSwiftMessageAsync(content);
-
-				if (!swiftDataResponse.IsSuccessful)
+				var swiftMessage = await reader.ReadToEndAsync();
+				var message = messageService.InsertSwiftMessage(swiftMessage);
+				if (message != null)
 				{
-					transactionScope.Dispose();
-					return BadRequest(swiftDataResponse.Message);
+					logger.LogInformation("Message Saved via Uploaded File: => {@message}", message);
+					return StatusCode(StatusCodes.Status200OK, message);
 				}
 
-				logger.LogInformation(GlobalConstants.InsertDataProcessStarted);
-				var insertionResponse = await this.messageService.PargeSwiftMessageAsync(swiftDataResponse.Message);
-
-				if (!insertionResponse.IsSuccessful)
-				{
-					transactionScope.Dispose();
-					return BadRequest(insertionResponse.Message);
-				}
-
-				transactionScope.Complete();
-				return Ok(GlobalConstants.SuccessfulDataInsertion);
-			}
-
-			catch (ArgumentNullException ex)
-			{
-				logger.LogInformation(ex.Message);
-				transactionScope.Dispose();
-				return BadRequest(new ResponseMessage<string> { IsSuccessful = false, Message = GlobalConstants.ArgumentNullMessage });
-			}
-			catch (IOException ex)
-			{
-				logger.LogInformation(ex.Message);
-				transactionScope.Dispose();
-				return BadRequest(new ResponseMessage<string> { IsSuccessful = false, Message = GlobalConstants.IOExceptionMessage });
-			}
-			catch (OutOfMemoryException ex)
-			{
-				logger.LogInformation(ex.Message);
-				transactionScope.Dispose();
-				return BadRequest(new ResponseMessage<string> { IsSuccessful = false, Message = GlobalConstants.OutOfMemoryMessage });
-			}
-			catch (SqliteException ex)
-			{
-				logger.LogInformation(ex.Message);
-				transactionScope.Dispose();
-				return BadRequest(new ResponseMessage<string> { IsSuccessful = false, Message = ex.Message });
-			}
-			catch (Exception ex)
-			{
-				logger.LogInformation(ex.Message);
-				transactionScope.Dispose();
-				return BadRequest(new ResponseMessage<string> { IsSuccessful = false, Message = ex.Message });
-			}
+				logger.LogError("Incorrect file content");
+				return StatusCode(StatusCodes.Status400BadRequest, "Incorrect file content");
 
 
-
+			}
 		}
 	}
 }
