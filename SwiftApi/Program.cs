@@ -1,13 +1,9 @@
 using Microsoft.Data.Sqlite;
-using NLog.Extensions.Logging;
-using NLog;
 using Serilog;
 using SwiftApi.Core.Services;
 using SwiftApi.Core.Services.Interfaces;
 using SwiftApi.Data;
 using SwiftApi.Data.Repositories;
-using Microsoft.OpenApi.Models;
-using NLog.Web;
 
 namespace SwiftApi
 {
@@ -34,13 +30,6 @@ namespace SwiftApi
 
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
-
-			builder.Services.AddLogging(logginBuilders => 
-			{
-				logginBuilders.ClearProviders();
-				logginBuilders.AddNLogWeb();
-			
-			});
 
 			var app = builder.Build();
 
