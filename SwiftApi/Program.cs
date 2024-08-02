@@ -1,3 +1,8 @@
+using NLog.Web;
+using SwiftApi.Core.Services;
+using SwiftApi.Core.Services.Interfaces;
+using SwiftApi.Data;
+using SwiftApi.Data.Repositories;
 
 namespace SwiftApi
 {
@@ -10,7 +15,23 @@ namespace SwiftApi
 			// Add services to the container.
 
 			builder.Services.AddControllers();
-			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+			builder.Services.AddLogging(loggingBuilders =>
+			{
+				loggingBuilders.ClearProviders();
+				loggingBuilders.AddNLogWeb();
+
+			});
+
+			builder.Services.AddTransient(provider =>
+			{
+				var configuration = provider.GetRequiredService<IConfiguration>();
+				var connectionString = configuration.GetConnectionString("SQLiteConnection");
+				return new SwiftApiDbContext(connectionString);
+			});
+
+			builder.Services.AddScoped<IMessageService, MessageService>();
+			builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
 
@@ -24,13 +45,11 @@ namespace SwiftApi
 			}
 
 			app.UseHttpsRedirection();
-
+			app.UseRouting();
 			app.UseAuthorization();
-
-
 			app.MapControllers();
-
 			app.Run();
 		}
+		
 	}
 }

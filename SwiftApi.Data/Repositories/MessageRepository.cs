@@ -18,7 +18,8 @@ namespace SwiftApi.Data.Repositories
 
 			try
 			{
-				var result = await swiftApiDbContext.InsertDataAsync(message);
+				 await this.swiftApiDbContext.InsertDataAsync(message);
+				response.Data = GlobalConstants.GlobalConstants.SuccessfulInsert;
 			}
 			catch (Exception ex)
 			{
